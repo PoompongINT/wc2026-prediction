@@ -366,7 +366,7 @@
 <script>
   // ===== CONFIG =====
   const SHEET_ID = "1GX67EEFhPGPY4B7dTJaQBYRrrMCMHt6jW5s45CCeiiU"; // ← ใส่ Sheet ID ตรงนี้!
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw9d2QJgmMfOnxxXP8b-FD-pDZYrwd2HMs55ahDIl1TK9znNOceiNP4gSyEQFFD8C7l/exec"; // ← ใส่ Apps Script URL ตรงนี้!
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwITEBBCcLz3GDEUVqaCA1kc6FiIfpxITo5EJozof_Vnrx6H3HJWtUKFBTNwjskX2dR/exec"; // ← ใส่ Apps Script URL ตรงนี้!
   const API_KEY = "AIzaSyC9ryHUiSV77BcyU0MsvI-1108e8UbykmI"; // ← ใส่ API Key ตรงนี้!
 
   // ===== STATE =====
@@ -478,48 +478,43 @@
   }
 
   // ===== SUBMIT PREDICTION =====
-  async function submitPrediction() {
-    const matchId = document.getElementById("match-select").value;
-    const homePred = document.getElementById("home-pred").value;
-    const awayPred = document.getElementById("away-pred").value;
-    const name = document.getElementById("player-name").value;
-    const email = document.getElementById("player-email").value;
+async function submitPrediction(matchId, homeScore, awayScore) {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
 
-    if (!matchId || !name || !email) {
-      showAlert("predict-alert", "กรุณากรอกข้อมูลให้ครบ!", "error");
-      return;
+  const payload = {
+    playerName: user.displayName,
+    email: user.email,
+    matchId: matchId,
+    homeScore: homeScore,
+    awayScore: awayScore
+  };
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+
+    const result = await res.json();
+
+    if (result.status === "success") {
+      // ✅ ทายสำเร็จ
+      showAlert("success", "✅ บันทึกผลทายสำเร็จ!");
+      markMatchAsPredicted(matchId); // ซ่อนปุ่ม Submit
+
+    } else if (result.status === "duplicate") {
+      // ❌ ทายซ้ำ
+      showAlert("warning", "⚠️ คุณเคยทายแมตช์นี้แล้ว!");
+
+    } else {
+      showAlert("error", "❌ เกิดข้อผิดพลาด กรุณาลองใหม่");
     }
 
-    const btn = document.querySelector("#page-predict .btn");
-    btn.disabled = true;
-    btn.textContent = "กำลังส่ง...";
-
-const payload = {
-  playerName: name,              // ✅ ตรงกับ data.playerName
-  email: email,                  // ✅ ตรงกับ data.email
-  matchId: matchId,              // ✅ ตรงกับ data.matchId
-  homeScore: parseInt(homePred), // ✅ ตรงกับ data.homeScore
-  awayScore: parseInt(awayPred)  // ✅ ตรงกับ data.awayScore
-};
-
-    try {
-      await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-
-      showAlert("predict-alert", "✅ ส่งผลทายสำเร็จ! โชคดีนะครับ! ⚽", "success");
-      document.getElementById("match-select").value = "";
-      document.getElementById("home-pred").value = "0";
-      document.getElementById("away-pred").value = "0";
-      document.getElementById("match-preview").style.display = "none";
-    } catch (err) {
-      showAlert("predict-alert", "❌ เกิดข้อผิดพลาด กรุณาลองใหม่", "error");
-    }
-
-    btn.disabled = false;
-    btn.textContent = "✅ ส่งผลทาย";
+  } catch (err) {
+    showAlert("error", "❌ ไม่สามารถเชื่อมต่อได้: " + err.message);
   }
+}
 
   // ===== LOAD LEADERBOARD =====
   async function loadLeaderboard() {
@@ -578,13 +573,49 @@ const payload = {
   }
 
   // ===== SHOW ALERT =====
-  function showAlert(id, msg, type) {
-    const el = document.getElementById(id);
-    el.textContent = msg;
-    el.className = `alert alert-${type}`;
-    el.style.display = "block";
-    setTimeout(() => { el.style.display = "none"; }, 4000);
+// แสดง Alert สวยงาม
+function showAlert(type, message) {
+  const colors = {
+    success: "#2ecc71",
+    warning: "#f39c12",
+    error:   "#e74c3c"
+  };
+
+  const alert = document.createElement("div");
+  alert.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: ${colors[type]};
+    color: white;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 9999;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: opacity 0.5s;
+  `;
+  alert.textContent = message;
+  document.body.appendChild(alert);
+
+  // หายไปอัตโนมัติใน 3 วินาที
+  setTimeout(() => {
+    alert.style.opacity = "0";
+    setTimeout(() => alert.remove(), 500);
+  }, 3000);
+}
+
+// ซ่อนปุ่ม Submit หลังทายแล้ว
+function markMatchAsPredicted(matchId) {
+  const btn = document.querySelector(`[data-match-id="${matchId}"] .submit-btn`);
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "✅ ทายแล้ว";
+    btn.style.background = "#2ecc71";
   }
+}
 
   // ===== INIT =====
   loadMatches();
