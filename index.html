@@ -494,14 +494,13 @@
     btn.disabled = true;
     btn.textContent = "กำลังส่ง...";
 
-    const payload = {
-      predictionId: "P" + Date.now(),
-      playerId: email,
-      matchId: matchId,
-      homePred: parseInt(homePred),
-      awayPred: parseInt(awayPred),
-      playerName: name
-    };
+const payload = {
+  playerName: name,              // ✅ ตรงกับ data.playerName
+  email: email,                  // ✅ ตรงกับ data.email
+  matchId: matchId,              // ✅ ตรงกับ data.matchId
+  homeScore: parseInt(homePred), // ✅ ตรงกับ data.homeScore
+  awayScore: parseInt(awayPred)  // ✅ ตรงกับ data.awayScore
+};
 
     try {
       await fetch(SCRIPT_URL, {
