@@ -545,18 +545,52 @@
     }
   }
 
-  // ===== LOGIN =====
-  function login() {
-    const email = document.getElementById("login-email").value.trim();
-    const name  = document.getElementById("login-name").value.trim();
-    if (!email || !name) { showAlert("error", "❌ กรุณากรอกข้อมูลให้ครบ!"); return; }
+// ===== LOGIN =====
+async function login() {
+  const email = document.getElementById("login-email").value.trim();
+  const name  = document.getElementById("login-name").value.trim();
 
-    currentUser = { email, name };
+  if (!email || !name) { showAlert("error", "❌ กรุณากรอกข้อมูลให้ครบ!"); return; }
+
+  // ล็อคปุ่มระหว่างเช็ค
+  const btn = document.querySelector("#login-form-box .btn");
+  btn.disabled    = true;
+  btn.textContent = "⏳ กำลังตรวจสอบ...";
+
+  try {
+    // ดึง Predictions เพื่อเช็ค Email
+    const res  = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Predictions!B2:C500?key=${API_KEY}`);
+    const data = await res.json();
+    const rows = data.values || [];
+
+    // หา Email ที่ตรงกัน (C = index 1)
+    const existing = rows.find(row => row[1] === email);
+
+    let finalName = name;
+
+    if (existing && existing[0] !== name) {
+      // Email นี้เคยใช้ชื่ออื่น → บังคับใช้ชื่อเดิม
+      finalName = existing[0];
+      showAlert("warning", `⚠️ Email นี้ลงทะเบียนในชื่อ "${finalName}" แล้ว`);
+    }
+
+    currentUser = { email, name: finalName };
     localStorage.setItem("wc2026_user", JSON.stringify(currentUser));
     updateLoginUI();
-    showAlert("success", "✅ ยินดีต้อนรับ " + name + "!");
+
+    if (finalName === name) {
+      showAlert("success", "✅ ยินดีต้อนรับ " + finalName + "!");
+    }
+
     showPage("matches", document.querySelector("nav button"));
+
+  } catch (err) {
+    showAlert("error", "❌ เชื่อมต่อไม่ได้: " + err.message);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = "เข้าสู่ระบบ";
   }
+}
 
   // ===== LOGOUT =====
   function logout() {
