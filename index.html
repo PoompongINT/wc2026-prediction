@@ -395,6 +395,20 @@
       width: 90%; max-width: 420px;
       box-shadow: 0 0 40px rgba(255,215,0,0.2);
     }
+
+    /* ===== FLAG IMG ===== */
+    .flag-img {
+      width: 24px; height: auto;
+      border-radius: 3px;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+    .flag-img-sm {
+      width: 20px; height: auto;
+      border-radius: 2px;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
   </style>
 </head>
 <body>
@@ -531,8 +545,9 @@
             </div>
             <div id="champion-selected-team-display" style="display:none;">
               <div class="selected-team-box gold">
-                <span>🏆 <strong id="champion-selected-team-name"
-                  style="color:#FFD700;"></strong></span>
+                <span id="champion-selected-team-name-wrap">
+                  🏆 <strong id="champion-selected-team-name" style="color:#FFD700;"></strong>
+                </span>
                 <button class="change-btn"
                   onclick="clearTeamSearchFor('champion')">✕ เปลี่ยน</button>
               </div>
@@ -583,8 +598,9 @@
             </div>
             <div id="topscorer-selected-team-display" style="display:none;">
               <div class="selected-team-box">
-                <span>🏳️ <strong id="topscorer-selected-team-name"
-                  style="color:#2ecc71;"></strong></span>
+                <span id="topscorer-selected-team-name-wrap">
+                  <strong id="topscorer-selected-team-name" style="color:#2ecc71;"></strong>
+                </span>
                 <button class="change-btn"
                   onclick="clearTeamSearchFor('topscorer')">✕ เปลี่ยน</button>
               </div>
@@ -850,7 +866,7 @@
         </button>
       </div>
 
-      <!-- ===== 🆕 SYNC & RECALCULATE CARD ===== -->
+      <!-- ===== SYNC & RECALCULATE CARD ===== -->
       <div class="card" style="border-color:#3498db;">
         <h3 style="color:#3498db; margin-bottom:8px;">🛠️ เครื่องมือจัดการคะแนน</h3>
         <p style="color:#888; font-size:0.85rem; margin-bottom:18px; line-height:1.6;">
@@ -973,6 +989,172 @@
   const SHEET_ID        = "1GX67EEFhPGPY4B7dTJaQBYRrrMCMHt6jW5s45CCeiiU";
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDSNBP5uDVb9NS0kcF5pioLqljAeT_popG5Xncv38GI65DMtQpzqOO-15pPSck2N1_/exec";
   const API_KEY         = "AIzaSyC9ryHUiSV77BcyU0MsvI-1108e8UbykmI";
+
+  // ===== FLAG MAP =====
+  const FLAG_MAP = {
+    "Mexico":                  "mx",
+    "South Africa":            "za",
+    "Korea Republic":          "kr",
+    "Czechia":                 "cz",
+    "Canada":                  "ca",
+    "Bosnia and Herzegovina":  "ba",
+    "USA":                     "us",
+    "Brazil":                  "br",
+    "Argentina":               "ar",
+    "France":                  "fr",
+    "Germany":                 "de",
+    "Spain":                   "es",
+    "England":                 "gb-eng",
+    "Japan":                   "jp",
+    "Portugal":                "pt",
+    "Netherlands":             "nl",
+    "Morocco":                 "ma",
+    "Senegal":                 "sn",
+    "Australia":               "au",
+    "Saudi Arabia":            "sa",
+    "Belgium":                 "be",
+    "Croatia":                 "hr",
+    "Uruguay":                 "uy",
+    "Switzerland":             "ch",
+    "Denmark":                 "dk",
+    "Poland":                  "pl",
+    "Serbia":                  "rs",
+    "Ecuador":                 "ec",
+    "Cameroon":                "cm",
+    "Ghana":                   "gh",
+    "Tunisia":                 "tn",
+    "Iran":                    "ir",
+    "Qatar":                   "qa",
+    "Costa Rica":              "cr",
+    "Wales":                   "gb-wls",
+    "Colombia":                "co",
+    "Venezuela":               "ve",
+    "Chile":                   "cl",
+    "Peru":                    "pe",
+    "Panama":                  "pa",
+    "Honduras":                "hn",
+    "Jamaica":                 "jm",
+    "New Zealand":             "nz",
+    "Nigeria":                 "ng",
+    "Egypt":                   "eg",
+    "Algeria":                 "dz",
+    "Ivory Coast":             "ci",
+    "Mali":                    "ml",
+    "China":                   "cn",
+    "Indonesia":               "id",
+    "Thailand":                "th",
+    "Iraq":                    "iq",
+    "Turkey":                  "tr",
+    "Ukraine":                 "ua",
+    "Austria":                 "at",
+    "Hungary":                 "hu",
+    "Slovakia":                "sk",
+    "Romania":                 "ro",
+    "Greece":                  "gr",
+    "Scotland":                "gb-sct",
+    "Sweden":                  "se",
+    "Norway":                  "no",
+    "Finland":                 "fi",
+    "Czech Republic":          "cz",
+    "Russia":                  "ru",
+    "Israel":                  "il",
+    "Paraguay":                "py",
+    "Bolivia":                 "bo",
+    "Cuba":                    "cu",
+    "El Salvador":             "sv",
+    "Guatemala":               "gt",
+    "Trinidad and Tobago":     "tt",
+    "Kenya":                   "ke",
+    "Tanzania":                "tz",
+    "Uganda":                  "ug",
+    "Zimbabwe":                "zw",
+    "Zambia":                  "zm",
+    "Angola":                  "ao",
+    "Mozambique":              "mz",
+    "Libya":                   "ly",
+    "Sudan":                   "sd",
+    "Ethiopia":                "et",
+    "Burkina Faso":            "bf",
+    "Guinea":                  "gn",
+    "Benin":                   "bj",
+    "Togo":                    "tg",
+    "Gabon":                   "ga",
+    "Congo":                   "cg",
+    "DR Congo":                "cd",
+    "Equatorial Guinea":       "gq",
+    "Cape Verde":              "cv",
+    "Mauritania":              "mr",
+    "Comoros":                 "km",
+    "Gambia":                  "gm",
+    "Sierra Leone":            "sl",
+    "Liberia":                 "lr",
+    "Guinea-Bissau":           "gw",
+    "South Korea":             "kr",
+    "North Korea":             "kp",
+    "Vietnam":                 "vn",
+    "Philippines":             "ph",
+    "Malaysia":                "my",
+    "Singapore":               "sg",
+    "Myanmar":                 "mm",
+    "Cambodia":                "kh",
+    "Laos":                    "la",
+    "Uzbekistan":              "uz",
+    "Kazakhstan":              "kz",
+    "Kyrgyzstan":              "kg",
+    "Tajikistan":              "tj",
+    "Turkmenistan":            "tm",
+    "Afghanistan":             "af",
+    "Pakistan":                "pk",
+    "India":                   "in",
+    "Bangladesh":              "bd",
+    "Sri Lanka":               "lk",
+    "Nepal":                   "np",
+    "Bahrain":                 "bh",
+    "Kuwait":                  "kw",
+    "Oman":                    "om",
+    "UAE":                     "ae",
+    "Jordan":                  "jo",
+    "Lebanon":                 "lb",
+    "Syria":                   "sy",
+    "Palestine":               "ps",
+    "Yemen":                   "ye",
+    "Cyprus":                  "cy",
+    "Albania":                 "al",
+    "Armenia":                 "am",
+    "Azerbaijan":              "az",
+    "Georgia":                 "ge",
+    "Belarus":                 "by",
+    "Moldova":                 "md",
+    "Lithuania":               "lt",
+    "Latvia":                  "lv",
+    "Estonia":                 "ee",
+    "Iceland":                 "is",
+    "Ireland":                 "ie",
+    "Northern Ireland":        "gb-nir",
+    "Luxembourg":              "lu",
+    "Malta":                   "mt",
+    "Andorra":                 "ad",
+    "Liechtenstein":           "li",
+    "San Marino":              "sm",
+    "Kosovo":                  "xk",
+    "North Macedonia":         "mk",
+    "Montenegro":              "me",
+    "Slovenia":                "si",
+    "Bulgaria":                "bg",
+    "Portugal":                "pt",
+    "Italy":                   "it",
+  };
+
+  // ===== getFlag helper =====
+  function getFlag(teamName, size = 24) {
+    const code = FLAG_MAP[teamName];
+    if (!code) return "🏳️ ";
+    return `<img src="https://flagcdn.com/w40/${code}.png"
+                 alt="${teamName}"
+                 style="width:${size}px; height:auto; border-radius:3px;
+                        vertical-align:middle; margin-right:5px;"
+                 onerror="this.outerHTML='🏳️ '">`;
+  }
 
   // ==========================================
   // ===== STATE =====
@@ -1208,12 +1390,12 @@
         return `
           <div class="card">
             <div class="match-card">
-              <div><div class="team-name">🏳️ ${home || "-"}</div></div>
+              <div><div class="team-name">${getFlag(home)}${home || "-"}</div></div>
               <div>
                 <div class="vs">${scoreText}</div>
                 <div class="match-date">${date || ""}</div>
               </div>
-              <div><div class="team-name">🏳️ ${away || "-"}</div></div>
+              <div><div class="team-name">${getFlag(away)}${away || "-"}</div></div>
             </div>
             <div style="text-align:center; margin-top:10px;">
               <span class="status-badge ${isFinished ? "status-finished" : "status-upcoming"}">
@@ -1300,10 +1482,11 @@
       return;
     }
 
-    document.getElementById("home-team-name").textContent = "🏳️ " + match[2];
-    document.getElementById("away-team-name").textContent = "🏳️ " + match[3];
-    document.getElementById("home-label").textContent     = match[2];
-    document.getElementById("away-label").textContent     = match[3];
+    // ใช้ innerHTML + getFlag
+    document.getElementById("home-team-name").innerHTML = getFlag(match[2]) + match[2];
+    document.getElementById("away-team-name").innerHTML = getFlag(match[3]) + match[3];
+    document.getElementById("home-label").textContent   = match[2];
+    document.getElementById("away-label").textContent   = match[3];
     document.getElementById("match-preview").style.display = "block";
 
     const matchTime = new Date(match[4]);
@@ -1459,8 +1642,8 @@
   function openEditModal(matchId, homeTeam, awayTeam, matchDate, prevHome, prevAway) {
     editingMatch = { matchId, homeTeam, awayTeam, matchDate, prevHome, prevAway };
 
-    document.getElementById("edit-home-name").textContent  = "🏳️ " + homeTeam;
-    document.getElementById("edit-away-name").textContent  = "🏳️ " + awayTeam;
+    document.getElementById("edit-home-name").innerHTML  = getFlag(homeTeam) + homeTeam;
+    document.getElementById("edit-away-name").innerHTML  = getFlag(awayTeam) + awayTeam;
     document.getElementById("edit-home-label").textContent = homeTeam;
     document.getElementById("edit-away-label").textContent = awayTeam;
     document.getElementById("edit-match-label").textContent = "📅 " + matchDate;
@@ -1590,14 +1773,13 @@
   function renderTeamDropdownFor(type, query) {
     const filtered = allTeams.filter(t => t.toLowerCase().includes(query));
     const dropdown = document.getElementById(type + "-team-dropdown");
-    const emoji    = type === "champion" ? "🏆" : "🏳️";
 
     dropdown.innerHTML = filtered.length === 0
       ? `<div class="team-dropdown-empty">😕 ไม่พบทีม "${query}"</div>`
       : filtered.map(team => `
           <div class="team-dropdown-item"
             onclick="selectTeamFor('${type}', '${team.replace(/'/g, "\\'")}')">
-            ${emoji} ${team}
+            ${getFlag(team, 20)} ${team}
           </div>`).join("");
   }
 
@@ -1609,7 +1791,13 @@
     document.getElementById(type + "-team-dropdown").style.display     = "none";
     document.getElementById(type + "-team-search-clear").style.display = "none";
     document.getElementById(type + "-selected-team-display").style.display = "block";
-    document.getElementById(type + "-selected-team-name").textContent  = team;
+
+    // ใส่ธงใน selected team name
+    const nameWrap = document.getElementById(type + "-selected-team-name-wrap");
+    if (nameWrap) {
+      const emoji = type === "champion" ? "🏆 " : "";
+      nameWrap.innerHTML = `${getFlag(team, 22)} ${emoji}<strong style="color:${type === "champion" ? "#FFD700" : "#2ecc71"};">${team}</strong>`;
+    }
 
     if (type === "champion") {
       specialState.champion.selectedValue = team;
@@ -1707,8 +1895,10 @@
 
     document.getElementById("selected-player-display").style.display = "block";
     document.getElementById("selected-player-name").textContent      = "⚽ " + name;
-    document.getElementById("selected-player-team").textContent      = "🏳️ " + team;
-    document.getElementById("topscorer-btn").disabled                = false;
+    // ใส่ธงใน selected player team
+    document.getElementById("selected-player-team").innerHTML =
+      getFlag(team, 18) + team;
+    document.getElementById("topscorer-btn").disabled = false;
   }
 
   // ==========================================
@@ -2096,14 +2286,14 @@
       return `
         <div class="history-card ${h.resultType}" id="hcard-${h.matchId}">
           <div class="history-teams">
-            <div class="history-team">🏳️ ${h.homeTeam}</div>
+            <div class="history-team">${getFlag(h.homeTeam, 20)}${h.homeTeam}</div>
             <div class="history-score-box">
               ${realScoreHtml}
               <div style="font-size:0.8rem; color:#aaa;">
                 ทาย: ${h.homePred} - ${h.awayPred}
               </div>
             </div>
-            <div class="history-team">🏳️ ${h.awayTeam}</div>
+            <div class="history-team">${getFlag(h.awayTeam, 20)}${h.awayTeam}</div>
           </div>
           <div class="history-footer">
             <span>📅 ${h.matchDate}</span>
@@ -2188,7 +2378,7 @@
             const [, , home, away, , hScore, aScore, dp] = row;
             return `
               <div class="finished-row">
-                <span>${home} vs ${away}</span>
+                <span>${getFlag(home, 18)}${home} vs ${getFlag(away, 18)}${away}</span>
                 <span class="finished-score">${hScore} - ${aScore}</span>
                 <div style="display:flex; gap:8px; align-items:center;">
                   ${dp === "Yes"
@@ -2212,8 +2402,8 @@
     btn.style.color      = "#000";
 
     if (match) {
-      document.getElementById("admin-home-name").textContent  = "🏳️ " + match[2];
-      document.getElementById("admin-away-name").textContent  = "🏳️ " + match[3];
+      document.getElementById("admin-home-name").innerHTML  = getFlag(match[2]) + match[2];
+      document.getElementById("admin-away-name").innerHTML  = getFlag(match[3]) + match[3];
       document.getElementById("admin-home-label").textContent = match[2];
       document.getElementById("admin-away-label").textContent = match[3];
       document.getElementById("admin-match-preview").style.display = "block";
@@ -2230,101 +2420,87 @@
     }
   }
 
-async function submitAdminScore() {
-  const matchId   = document.getElementById("admin-match-select").value;
-  const homeScore = document.getElementById("admin-home-score").value;
-  const awayScore = document.getElementById("admin-away-score").value;
+  async function submitAdminScore() {
+    const matchId   = document.getElementById("admin-match-select").value;
+    const homeScore = document.getElementById("admin-home-score").value;
+    const awayScore = document.getElementById("admin-away-score").value;
 
-  if (!matchId) { showAlert("error", "❌ กรุณาเลือกนัด"); return; }
+    if (!matchId) { showAlert("error", "❌ กรุณาเลือกนัด"); return; }
 
-  const match = matchesData.find(r => r[0] === matchId);
-  if (!confirm(
-    `ยืนยันผล?\n\n⚽ ${match[2]}  ${homeScore} - ${awayScore}  ${match[3]}`
-  )) return;
+    const match = matchesData.find(r => r[0] === matchId);
+    if (!confirm(
+      `ยืนยันผล?\n\n⚽ ${match[2]}  ${homeScore} - ${awayScore}  ${match[3]}`
+    )) return;
 
-  const btn = document.getElementById("admin-submit-btn");
-  btn.disabled         = true;
-  btn.textContent      = "⏳ กำลังคำนวณ...";
-  btn.style.background = "#555";
-  btn.style.color      = "#fff";
+    const btn = document.getElementById("admin-submit-btn");
+    btn.disabled         = true;
+    btn.textContent      = "⏳ กำลังคำนวณ...";
+    btn.style.background = "#555";
+    btn.style.color      = "#fff";
 
-  // ===== DEBUG: แสดง payload ที่จะส่ง =====
-  const payload = {
-    action:   "updateScore",
-    password: adminPassword,
-    matchId:  String(matchId),
-    homeScore: String(homeScore),
-    awayScore: String(awayScore)
-  };
-  console.log("📤 Payload:", JSON.stringify(payload));
+    const payload = {
+      action:    "updateScore",
+      password:  adminPassword,
+      matchId:   String(matchId),
+      homeScore: String(homeScore),
+      awayScore: String(awayScore)
+    };
+    console.log("📤 Payload:", JSON.stringify(payload));
 
-  try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method:  "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body:    JSON.stringify(payload)
-    });
-
-    console.log("📥 HTTP Status:", res.status);
-    console.log("📥 Content-Type:", res.headers.get("content-type"));
-
-    const rawText = await res.text();
-    console.log("📥 Raw Response (full):", rawText);
-
-    // ===== ป้องกัน JSON.parse crash =====
-    let result;
     try {
-      result = JSON.parse(rawText);
-    } catch (parseErr) {
-      console.error("❌ JSON Parse Error:", parseErr);
-      // แสดง raw response ใน alert เพื่อ debug
-      showAlert("error", "❌ Response ไม่ใช่ JSON: " + rawText.substring(0, 100));
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method:  "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body:    JSON.stringify(payload)
+      });
+
+      console.log("📥 HTTP Status:", res.status);
+      const rawText = await res.text();
+      console.log("📥 Raw Response:", rawText);
+
+      let result;
+      try {
+        result = JSON.parse(rawText);
+      } catch (parseErr) {
+        showAlert("error", "❌ Response ไม่ใช่ JSON: " + rawText.substring(0, 100));
+        btn.disabled         = false;
+        btn.textContent      = "💾 บันทึกผลและคำนวณคะแนน";
+        btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
+        btn.style.color      = "#000";
+        return;
+      }
+
+      if (result.status === "success") {
+        showAlert("success", "✅ " + result.message);
+        btn.textContent      = "✅ อัปเดตสำเร็จ!";
+        btn.style.background = "#2ecc71";
+        btn.style.color      = "#fff";
+        setTimeout(() => loadAdminMatches(), 1500);
+      } else if (result.status === "unauthorized") {
+        showAlert("error", "❌ รหัสผ่านไม่ถูกต้อง!");
+        btn.disabled         = false;
+        btn.textContent      = "💾 บันทึกผลและคำนวณคะแนน";
+        btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
+        btn.style.color      = "#000";
+      } else {
+        showAlert("error", "❌ " + (result.message || "Unknown error"));
+        btn.disabled         = false;
+        btn.textContent      = "💾 บันทึกผลและคำนวณคะแนน";
+        btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
+        btn.style.color      = "#000";
+      }
+    } catch (err) {
+      console.error("❌ Fetch Error:", err);
+      showAlert("error", "❌ Network Error: " + err.message);
       btn.disabled         = false;
       btn.textContent      = "💾 บันทึกผลและคำนวณคะแนน";
       btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
       btn.style.color      = "#000";
-      return; // ← ไม่ logout!
     }
-
-    console.log("📥 Parsed Result:", result);
-
-    if (result.status === "success") {
-      showAlert("success", "✅ " + result.message);
-      btn.textContent      = "✅ อัปเดตสำเร็จ!";
-      btn.style.background = "#2ecc71";
-      btn.style.color      = "#fff";
-      setTimeout(() => loadAdminMatches(), 1500);
-
-    } else if (result.status === "unauthorized") {
-      // ===== แสดง popup แทน logout ทันที =====
-      showAlert("error", "❌ รหัสผ่านไม่ถูกต้อง! (unauthorized)");
-      btn.disabled         = false;
-      btn.textContent      = "💾 บันทึกผลและคำนวณคะแนน";
-      btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
-      btn.style.color      = "#000";
-      // ไม่ logout อัตโนมัติ ให้ user ตัดสินใจเอง
-
-    } else {
-      showAlert("error", "❌ " + (result.message || "Unknown error"));
-      btn.disabled         = false;
-      btn.textContent      = "💾 บันทึกผลและคำนวณคะแนน";
-      btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
-      btn.style.color      = "#000";
-    }
-
-  } catch (err) {
-    console.error("❌ Fetch Error:", err);
-    showAlert("error", "❌ Network Error: " + err.message);
-    btn.disabled         = false;
-    btn.textContent      = "💾 บันทึกผลและคำนวณคะแนน";
-    btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
-    btn.style.color      = "#000";
-    // ไม่ logout!
   }
-}
 
   // ==========================================
-  // ===== 🆕 SYNC LEADERBOARD (ADMIN) =====
+  // ===== SYNC LEADERBOARD =====
   // ==========================================
   async function syncLeaderboard() {
     if (!confirm("Sync ผู้เล่นทั้งหมดจาก Users → Leaderboard ใช่ไหมครับ?")) return;
@@ -2337,16 +2513,13 @@ async function submitAdminScore() {
     try {
       const res = await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        body: JSON.stringify({
-          action:   "syncLeaderboard",
-          password: adminPassword
-        })
+        body: JSON.stringify({ action: "syncLeaderboard", password: adminPassword })
       });
       const result = await res.json();
 
       if (result.status === "success") {
-        resultBox.style.color   = "#2ecc71";
-        resultBox.textContent   = "✅ " + result.message;
+        resultBox.style.color = "#2ecc71";
+        resultBox.textContent = "✅ " + result.message;
         showAlert("success", "✅ " + result.message);
       } else if (result.status === "unauthorized") {
         showAlert("error", "❌ รหัสผ่านไม่ถูกต้อง!"); adminLogout();
@@ -2363,7 +2536,7 @@ async function submitAdminScore() {
   }
 
   // ==========================================
-  // ===== 🆕 RECALCULATE ALL (ADMIN) =====
+  // ===== RECALCULATE ALL =====
   // ==========================================
   async function recalculateAll() {
     if (!confirm(
@@ -2376,15 +2549,12 @@ async function submitAdminScore() {
     const resultBox = document.getElementById("tool-result-box");
     resultBox.style.display = "block";
     resultBox.style.color   = "#aaa";
-    resultBox.textContent   = "⏳ กำลังคำนวณใหม่ทั้งหมด... (อาจใช้เวลาสักครู่)";
+    resultBox.textContent   = "⏳ กำลังคำนวณใหม่ทั้งหมด...";
 
     try {
       const res = await fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        body: JSON.stringify({
-          action:   "recalculateAll",
-          password: adminPassword
-        })
+        body: JSON.stringify({ action: "recalculateAll", password: adminPassword })
       });
       const result = await res.json();
 
@@ -2414,15 +2584,13 @@ async function submitAdminScore() {
     if (!answer) { showAlert("error", "❌ กรุณากรอกคำตอบ"); return; }
 
     const typeName = type === "champion" ? "ทีมแชมป์" : "Top Scorer";
-    if (!confirm(
-      `ยืนยันเฉลย ${typeName}: "${answer}" ?\n\nระบบจะแจกคะแนนทันที!`
-    )) return;
+    if (!confirm(`ยืนยันเฉลย ${typeName}: "${answer}" ?\n\nระบบจะแจกคะแนนทันที!`)) return;
 
     try {
       const res = await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         body: JSON.stringify({
-          action:   "gradeSpecialPredictions",
+          action: "gradeSpecialPredictions",
           password: adminPassword,
           type, answer
         })
