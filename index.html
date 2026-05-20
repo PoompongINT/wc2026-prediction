@@ -286,6 +286,79 @@
       background: #0a0a2e; border-radius: 10px;
       padding: 15px; margin-bottom: 15px; text-align: center;
     }
+
+    /* ===== TEAM SEARCH ===== */
+    .team-search-wrapper { position: relative; }
+    .team-search-clear {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%); cursor: pointer;
+      color: #888; font-size: 1.1rem; display: none;
+      background: none; border: none; padding: 4px;
+    }
+    .team-dropdown {
+      display: none;
+      background: #0a0a2e; border: 2px solid #333366;
+      border-top: none; border-radius: 0 0 10px 10px;
+      max-height: 220px; overflow-y: auto;
+      position: absolute; width: 100%; z-index: 100;
+    }
+    .team-dropdown-item {
+      padding: 12px 15px; cursor: pointer;
+      border-bottom: 1px solid #1a1a3e;
+      font-size: 0.95rem; transition: background 0.2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .team-dropdown-item:hover { background: #1a1a4e; }
+    .team-dropdown-item:last-child { border-bottom: none; }
+    .team-dropdown-empty {
+      padding: 15px; text-align: center; color: #888; font-size: 0.9rem;
+    }
+
+    /* ===== PLAYERS GRID ===== */
+    .players-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 8px; max-height: 280px; overflow-y: auto; padding: 4px;
+    }
+    .player-card {
+      background: #0a0a2e; border: 2px solid #333366;
+      border-radius: 10px; padding: 12px 10px; cursor: pointer;
+      text-align: center; font-size: 0.88rem; font-weight: bold;
+      transition: all 0.2s; line-height: 1.4;
+    }
+    .player-card:hover {
+      border-color: #2ecc71; background: #0a2a0a;
+    }
+    .player-card.selected {
+      border-color: #2ecc71; background: #0a2a0a; color: #2ecc71;
+    }
+
+    /* ===== STEP BADGE ===== */
+    .step-badge {
+      background: #2ecc71; color: #000; border-radius: 50%;
+      width: 22px; height: 22px; display: inline-flex;
+      align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: bold; margin-right: 6px;
+    }
+
+    /* ===== SELECTED DISPLAY ===== */
+    .selected-team-box {
+      background: #0a2a0a; border: 1px solid #2ecc71;
+      border-radius: 10px; padding: 10px 15px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 10px;
+    }
+    .selected-player-box {
+      background: #0a1a2a; border: 1px solid #2ecc71;
+      border-radius: 12px; padding: 15px; text-align: center;
+      margin-bottom: 15px;
+    }
+    .change-btn {
+      background: none; border: none; color: #888;
+      cursor: pointer; font-size: 0.85rem; padding: 2px 8px;
+      transition: color 0.2s;
+    }
+    .change-btn:hover { color: #e74c3c; }
   </style>
 </head>
 <body>
@@ -379,7 +452,7 @@
 
     <div id="special-content" style="display:none;">
 
-      <!-- CHAMPION CARD -->
+      <!-- ===== CHAMPION CARD ===== -->
       <div class="special-card champion-card">
         <div class="special-header">
           <div class="special-icon">🏆</div>
@@ -390,7 +463,6 @@
           <div class="special-pts-badge" id="champion-points-badge">+? pts</div>
         </div>
 
-        <!-- ยังเปิดรับอยู่ -->
         <div id="champion-open" style="display:none;">
           <div id="champion-current" style="display:none;" class="current-pred-box">
             <span>📝 ทายไว้:</span>
@@ -408,13 +480,12 @@
           </button>
         </div>
 
-        <!-- ปิดรับแล้ว -->
         <div id="champion-closed" style="display:none;">
           <div id="champion-result-box"></div>
         </div>
       </div>
 
-      <!-- TOP SCORER CARD -->
+      <!-- ===== TOP SCORER CARD ===== -->
       <div class="special-card topscorer-card">
         <div class="special-header">
           <div class="special-icon">⚽</div>
@@ -425,26 +496,78 @@
           <div class="special-pts-badge green" id="topscorer-points-badge">+? pts</div>
         </div>
 
-        <!-- ยังเปิดรับอยู่ -->
         <div id="topscorer-open" style="display:none;">
+
+          <!-- Current Prediction -->
           <div id="topscorer-current" style="display:none;" class="current-pred-box">
             <span>📝 ทายไว้:</span>
             <strong id="topscorer-current-val" style="color:#2ecc71;"></strong>
             <span style="color:#888; font-size:0.8rem;">(เปลี่ยนได้ก่อนปิดรับ)</span>
           </div>
+
+          <!-- STEP 1: เลือกทีม -->
           <div class="form-group">
-            <label>นักเตะที่คิดว่าจะทำประตูสูงสุด</label>
-            <input type="text" id="topscorer-input"
-              placeholder="เช่น Mbappe, Ronaldo, Messi...">
-            <div class="input-hint">⚠️ พิมพ์ชื่อนักเตะเป็นภาษาอังกฤษ ตรงกับที่ Admin จะเฉลย</div>
+            <label>
+              <span class="step-badge">1</span>เลือกทีมชาติ
+            </label>
+            <div class="team-search-wrapper">
+              <input type="text" id="team-search"
+                placeholder="🔍 พิมพ์ค้นหาทีม เช่น Brazil, France..."
+                oninput="filterTeams(this.value)"
+                onfocus="showTeamDropdown()"
+                autocomplete="off">
+              <button class="team-search-clear" id="team-search-clear"
+                onclick="clearTeamSearch()">✕</button>
+              <div class="team-dropdown" id="team-dropdown"></div>
+            </div>
+
+            <div id="selected-team-display" style="display:none;">
+              <div class="selected-team-box">
+                <span>🏳️ <strong id="selected-team-name" style="color:#2ecc71;"></strong></span>
+                <button class="change-btn" onclick="clearTeamSearch()">✕ เปลี่ยน</button>
+              </div>
+            </div>
           </div>
-          <button class="btn" id="topscorer-btn" onclick="submitSpecial('topscorer')"
-            style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
+
+          <!-- STEP 2: เลือกผู้เล่น -->
+          <div class="form-group" id="player-select-group" style="display:none;">
+            <label>
+              <span class="step-badge">2</span>เลือกผู้เล่น
+            </label>
+
+            <div id="players-loading" style="display:none; text-align:center; padding:15px; color:#888;">
+              <div class="spinner" style="width:25px; height:25px; border-width:3px; margin:0 auto 8px;"></div>
+              กำลังโหลดรายชื่อผู้เล่น...
+            </div>
+
+            <div class="players-grid" id="players-grid" style="display:none;"></div>
+
+            <div id="players-empty" style="display:none;
+              text-align:center; padding:20px; color:#888; font-size:0.9rem;">
+              😕 ไม่พบผู้เล่นในทีมนี้
+            </div>
+          </div>
+
+          <!-- Selected Player Display -->
+          <div id="selected-player-display" style="display:none;">
+            <div class="selected-player-box">
+              <div style="color:#aaa; font-size:0.82rem; margin-bottom:6px;">⚽ ผู้เล่นที่เลือก</div>
+              <div style="font-size:1.2rem; font-weight:bold; color:#2ecc71;"
+                id="selected-player-name"></div>
+              <div style="color:#888; font-size:0.85rem; margin-top:4px;"
+                id="selected-player-team"></div>
+            </div>
+          </div>
+
+          <button class="btn" id="topscorer-btn"
+            onclick="submitSpecial('topscorer')"
+            disabled
+            style="background:linear-gradient(135deg,#2ecc71,#27ae60);">
             ⚽ ส่งผลทาย
           </button>
+
         </div>
 
-        <!-- ปิดรับแล้ว -->
         <div id="topscorer-closed" style="display:none;">
           <div id="topscorer-result-box"></div>
         </div>
@@ -622,13 +745,13 @@
 
     <div id="admin-panel" style="display:none;">
 
-      <!-- ===== อัปเดตผลแมตช์ ===== -->
       <div class="info-box">
         🎯 <strong>ทายสกอร์แม่นทั้งคู่</strong> = 3 pts &nbsp;|&nbsp;
         ✅ <strong>ทายผลแพ้/ชนะ/เสมอถูก</strong> = 1 pt &nbsp;|&nbsp;
         ⭐ <strong>Double Point</strong> = คะแนน x2
       </div>
 
+      <!-- อัปเดตผลแมตช์ -->
       <div class="card">
         <h3 style="color:#FFD700; margin-bottom:20px;">📝 อัปเดตผลการแข่งขัน</h3>
         <div class="form-group">
@@ -671,7 +794,7 @@
         </button>
       </div>
 
-      <!-- ===== เฉลยทายพิเศษ ===== -->
+      <!-- เฉลยทายพิเศษ -->
       <div class="card">
         <h3 style="color:#FFD700; margin-bottom:15px;">⭐ เฉลยการทายพิเศษ</h3>
         <div class="info-box">
@@ -679,35 +802,30 @@
           ⚽ <strong>ทาย Top Scorer ถูก</strong> = ตามที่ตั้งใน Settings
         </div>
 
-        <!-- Champion -->
         <div style="margin-bottom:20px;">
           <label style="color:#FFD700; display:block; margin-bottom:8px;">🏆 เฉลยทีมแชมป์</label>
           <div style="display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center;">
             <input type="text" id="admin-champion-answer"
               placeholder="ชื่อทีมแชมป์ (ภาษาอังกฤษ)">
             <button class="btn" style="width:auto; padding:12px 20px; white-space:nowrap;"
-              onclick="gradeSpecial('champion')">
-              ✅ เฉลย
-            </button>
+              onclick="gradeSpecial('champion')">✅ เฉลย</button>
           </div>
         </div>
 
-        <!-- Top Scorer -->
         <div>
           <label style="color:#2ecc71; display:block; margin-bottom:8px;">⚽ เฉลย Top Scorer</label>
           <div style="display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center;">
             <input type="text" id="admin-topscorer-answer"
               placeholder="ชื่อนักเตะ (ภาษาอังกฤษ)">
-            <button class="btn" style="width:auto; padding:12px 20px; white-space:nowrap;
-              background:linear-gradient(135deg,#2ecc71,#27ae60);"
-              onclick="gradeSpecial('topscorer')">
-              ✅ เฉลย
-            </button>
+            <button class="btn"
+              style="width:auto; padding:12px 20px; white-space:nowrap;
+                background:linear-gradient(135deg,#2ecc71,#27ae60);"
+              onclick="gradeSpecial('topscorer')">✅ เฉลย</button>
           </div>
         </div>
       </div>
 
-      <!-- ===== แมตช์ที่จบแล้ว ===== -->
+      <!-- แมตช์ที่จบแล้ว -->
       <div class="card">
         <h3 style="color:#FFD700; margin-bottom:15px;">✅ แมตช์ที่อัปเดตแล้ว</h3>
         <div id="finished-matches-list">
@@ -724,19 +842,28 @@
 </div>
 
 <script>
+  
   // ===== CONFIG =====
   const SHEET_ID        = "1GX67EEFhPGPY4B7dTJaQBYRrrMCMHt6jW5s45CCeiiU";
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwyJ6g2XnA0S0Z0tGJM3MQoOUC4v6f4BLBdZ0SxSUFG3SF7GPYrr7wYd2qqzMxxqp-C/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_nP1XknBTrGdiqW7qSAnrKaeNkM881Fh1yzq1Z3hgkPRw-ol-N3mxhVV_OF3V6P5W/exec";
   const API_KEY         = "AIzaSyC9ryHUiSV77BcyU0MsvI-1108e8UbykmI";
 
+  // ==========================================
   // ===== STATE =====
-  let matchesData      = [];
-  let historyData      = [];
-  let currentUser      = JSON.parse(localStorage.getItem("wc2026_user")) || null;
-  let countdownTimer   = null;
-  let adminLoggedIn    = false;
-  let adminPassword    = "";
+  // ==========================================
+  let matchesData       = [];
+  let historyData       = [];
+  let currentUser       = JSON.parse(localStorage.getItem("wc2026_user")) || null;
+  let countdownTimer    = null;
+  let adminLoggedIn     = false;
+  let adminPassword     = "";
   let specialCountdowns = {};
+
+  // Players State
+  let allTeams       = [];
+  let selectedTeam   = "";
+  let selectedPlayer = "";
+  let playersCache   = {};
 
   // ==========================================
   // ===== NAVIGATION =====
@@ -780,35 +907,35 @@
     const el = document.getElementById(id);
     if (!el) return;
     if (id === "signup-name-hint") {
-      el.className    = "input-hint";
-      el.textContent  = "⚠️ ชื่อนี้จะถูกใช้ตลอด เปลี่ยนไม่ได้ในภายหลัง";
+      el.className   = "input-hint";
+      el.textContent = "⚠️ ชื่อนี้จะถูกใช้ตลอด เปลี่ยนไม่ได้ในภายหลัง";
     } else {
-      el.className    = "input-hint";
-      el.textContent  = "";
+      el.className   = "input-hint";
+      el.textContent = "";
     }
   }
 
   function setHint(id, type, message) {
     const el = document.getElementById(id);
     if (!el) return;
-    el.className    = "input-hint " + type;
-    el.textContent  = message;
+    el.className   = "input-hint " + type;
+    el.textContent = message;
   }
 
   function updateLoginUI() {
     const loginBtn = document.getElementById("loginBtn");
     if (currentUser) {
       loginBtn.textContent = "👤 " + currentUser.name;
-      document.getElementById("login-form-box").style.display  = "none";
-      document.getElementById("logged-in-box").style.display   = "block";
-      document.getElementById("profile-name").textContent      = currentUser.name;
-      document.getElementById("profile-email").textContent     = currentUser.email;
-      document.getElementById("profile-name-2").textContent    = currentUser.name;
-      document.getElementById("profile-email-2").textContent   = currentUser.email;
+      document.getElementById("login-form-box").style.display = "none";
+      document.getElementById("logged-in-box").style.display  = "block";
+      document.getElementById("profile-name").textContent     = currentUser.name;
+      document.getElementById("profile-email").textContent    = currentUser.email;
+      document.getElementById("profile-name-2").textContent   = currentUser.name;
+      document.getElementById("profile-email-2").textContent  = currentUser.email;
     } else {
       loginBtn.textContent = "👤 Login";
-      document.getElementById("login-form-box").style.display  = "block";
-      document.getElementById("logged-in-box").style.display   = "none";
+      document.getElementById("login-form-box").style.display = "block";
+      document.getElementById("logged-in-box").style.display  = "none";
       document.getElementById("login-email").value  = "";
       document.getElementById("signup-email").value = "";
       document.getElementById("signup-name").value  = "";
@@ -1055,20 +1182,20 @@
     }
 
     const btn = document.getElementById("submit-btn");
-    btn.disabled = false;
-    btn.textContent = "✅ ส่งผลทาย";
+    btn.disabled         = false;
+    btn.textContent      = "✅ ส่งผลทาย";
     btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
-    btn.style.color = "#000";
+    btn.style.color      = "#000";
   }
 
   function updateDeadlineDisplay(matchTime) {
     const deadlineEl = document.getElementById("match-deadline");
-    const diff = matchTime - new Date();
+    const diff       = matchTime - new Date();
     if (diff <= 0) {
       deadlineEl.className   = "deadline-red";
       deadlineEl.textContent = "🔒 ปิดรับทายแล้ว — แมตช์เริ่มแล้ว!";
       const btn = document.getElementById("submit-btn");
-      btn.disabled = true;
+      btn.disabled    = true;
       btn.textContent = "🔒 หมดเวลาทาย";
       btn.style.background = "#555";
       clearInterval(countdownTimer); countdownTimer = null;
@@ -1141,6 +1268,173 @@
   }
 
   // ==========================================
+  // ===== LOAD TEAMS =====
+  // ==========================================
+  async function loadTeams() {
+    if (allTeams.length > 0) return;
+    try {
+      const res    = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "getPlayers" })
+      });
+      const result = await res.json();
+      if (result.status === "success") {
+        allTeams = result.teams;
+      }
+    } catch (err) {
+      console.error("loadTeams error:", err);
+    }
+  }
+
+  // ==========================================
+  // ===== TEAM SEARCH DROPDOWN =====
+  // ==========================================
+  function showTeamDropdown() {
+    if (allTeams.length === 0) return;
+    const query = document.getElementById("team-search").value.toLowerCase();
+    renderTeamDropdown(query);
+    document.getElementById("team-dropdown").style.display = "block";
+  }
+
+  function filterTeams(query) {
+    document.getElementById("team-search-clear").style.display = query ? "block" : "none";
+    renderTeamDropdown(query.toLowerCase());
+    document.getElementById("team-dropdown").style.display = "block";
+  }
+
+  function renderTeamDropdown(query) {
+    const filtered = allTeams.filter(t => t.toLowerCase().includes(query));
+    const dropdown = document.getElementById("team-dropdown");
+
+    if (filtered.length === 0) {
+      dropdown.innerHTML = `
+        <div class="team-dropdown-empty">😕 ไม่พบทีม "${query}"</div>`;
+      return;
+    }
+
+    dropdown.innerHTML = filtered.map(team => `
+      <div class="team-dropdown-item"
+        onclick="selectTeam('${team.replace(/'/g, "\\'")}')">
+        🏳️ ${team}
+      </div>`).join("");
+  }
+
+  async function selectTeam(team) {
+    selectedTeam   = team;
+    selectedPlayer = "";
+
+    // อัปเดต UI
+    document.getElementById("team-search").value               = team;
+    document.getElementById("team-search").style.display       = "none";
+    document.getElementById("team-dropdown").style.display     = "none";
+    document.getElementById("team-search-clear").style.display = "none";
+    document.getElementById("selected-team-display").style.display = "block";
+    document.getElementById("selected-team-name").textContent  = team;
+
+    // Reset player section
+    document.getElementById("selected-player-display").style.display = "none";
+    document.getElementById("selected-player-name").textContent      = "";
+    document.getElementById("selected-player-team").textContent      = "";
+    document.getElementById("player-select-group").style.display     = "block";
+
+    // Disable submit
+    const btn = document.getElementById("topscorer-btn");
+    btn.disabled = true;
+
+    // Load players
+    await loadPlayersForTeam(team);
+  }
+
+  function clearTeamSearch() {
+    selectedTeam   = "";
+    selectedPlayer = "";
+
+    document.getElementById("team-search").value               = "";
+    document.getElementById("team-search").style.display       = "block";
+    document.getElementById("team-dropdown").style.display     = "none";
+    document.getElementById("team-search-clear").style.display = "none";
+    document.getElementById("selected-team-display").style.display   = "none";
+    document.getElementById("player-select-group").style.display     = "none";
+    document.getElementById("selected-player-display").style.display = "none";
+
+    const btn = document.getElementById("topscorer-btn");
+    btn.disabled = true;
+  }
+
+  // ==========================================
+  // ===== LOAD PLAYERS FOR TEAM =====
+  // ==========================================
+  async function loadPlayersForTeam(team) {
+    document.getElementById("players-loading").style.display = "block";
+    document.getElementById("players-grid").style.display    = "none";
+    document.getElementById("players-empty").style.display   = "none";
+
+    try {
+      if (!playersCache[team]) {
+        const res    = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "getPlayers", team })
+        });
+        const result = await res.json();
+        playersCache[team] = result.status === "success" ? result.players : [];
+      }
+
+      const players = playersCache[team];
+      document.getElementById("players-loading").style.display = "none";
+
+      if (players.length === 0) {
+        document.getElementById("players-empty").style.display = "block";
+        return;
+      }
+
+      document.getElementById("players-grid").style.display = "grid";
+      document.getElementById("players-grid").innerHTML     = players.map(p => {
+        const cardId = "player-card-" + p.name.replace(/[^a-zA-Z0-9]/g, "_");
+        return `
+          <div class="player-card"
+            id="${cardId}"
+            onclick="selectPlayer('${p.name.replace(/'/g, "\\'")}', '${team.replace(/'/g, "\\'")}')">
+            ⚽ ${p.name}
+          </div>`;
+      }).join("");
+
+    } catch (err) {
+      document.getElementById("players-loading").style.display = "none";
+      document.getElementById("players-empty").style.display   = "block";
+      document.getElementById("players-empty").textContent     = "❌ โหลดไม่ได้: " + err.message;
+    }
+  }
+
+  // ==========================================
+  // ===== SELECT PLAYER =====
+  // ==========================================
+  function selectPlayer(name, team) {
+    // Reset card เดิม
+    if (selectedPlayer) {
+      const oldCard = document.getElementById(
+        "player-card-" + selectedPlayer.replace(/[^a-zA-Z0-9]/g, "_")
+      );
+      if (oldCard) oldCard.classList.remove("selected");
+    }
+
+    selectedPlayer = name;
+
+    // Highlight card ที่เลือก
+    const card = document.getElementById(
+      "player-card-" + name.replace(/[^a-zA-Z0-9]/g, "_")
+    );
+    if (card) card.classList.add("selected");
+
+    // แสดง Selected Player Display
+    document.getElementById("selected-player-display").style.display = "block";
+    document.getElementById("selected-player-name").textContent      = "⚽ " + name;
+    document.getElementById("selected-player-team").textContent      = "🏳️ " + team;
+
+    // Enable Submit
+    document.getElementById("topscorer-btn").disabled = false;
+  }
+
+  // ==========================================
   // ===== SPECIAL PREDICTIONS =====
   // ==========================================
   async function loadSpecialPage() {
@@ -1174,7 +1468,7 @@
     }
   }
 
-  function renderSpecialCard(type, info) {
+  async function renderSpecialCard(type, info) {
     const isChampion = type === "champion";
     const emoji      = isChampion ? "🏆" : "⚽";
     const color      = isChampion ? "#FFD700" : "#2ecc71";
@@ -1182,7 +1476,6 @@
     // Points badge
     document.getElementById(type + "-points-badge").textContent = `+${info.points} pts`;
 
-    // Deadline text
     const deadlineEl = document.getElementById(type + "-deadline-text");
 
     if (info.isClosed) {
@@ -1202,9 +1495,7 @@
           </div>`;
       } else {
         myPredHtml = `
-          <div class="my-pred-box" style="color:#888;">
-            ❌ คุณไม่ได้ทายไว้
-          </div>`;
+          <div class="my-pred-box" style="color:#888;">❌ คุณไม่ได้ทายไว้</div>`;
       }
 
       let resultHtml = "";
@@ -1243,7 +1534,6 @@
         const dl = new Date(info.deadline);
         deadlineEl.textContent = "⏰ ปิดรับ: " + dl.toLocaleString("th-TH");
 
-        // Countdown
         if (specialCountdowns[type]) clearInterval(specialCountdowns[type]);
         specialCountdowns[type] = setInterval(() => {
           const diff = dl - new Date();
@@ -1258,25 +1548,53 @@
         deadlineEl.textContent = "⚠️ ยังไม่ได้ตั้ง Deadline";
       }
 
-      // แสดงผลทายปัจจุบัน
-      if (info.userPrediction) {
-        document.getElementById(type + "-current").style.display   = "block";
-        document.getElementById(type + "-current-val").textContent = info.userPrediction;
-        document.getElementById(type + "-input").value             = info.userPrediction;
-        document.getElementById(type + "-btn").textContent         = emoji + " อัปเดตผลทาย";
+      if (type === "champion") {
+        // Champion — input ธรรมดา
+        if (info.userPrediction) {
+          document.getElementById("champion-current").style.display   = "block";
+          document.getElementById("champion-current-val").textContent = info.userPrediction;
+          document.getElementById("champion-input").value             = info.userPrediction;
+          document.getElementById("champion-btn").textContent         = "🏆 อัปเดตผลทาย";
+        } else {
+          document.getElementById("champion-current").style.display = "none";
+          document.getElementById("champion-input").value           = "";
+          document.getElementById("champion-btn").textContent       = "🏆 ส่งผลทาย";
+        }
+
       } else {
-        document.getElementById(type + "-current").style.display = "none";
-        document.getElementById(type + "-input").value           = "";
-        document.getElementById(type + "-btn").textContent       = emoji + " ส่งผลทาย";
+        // Top Scorer — 2-step dropdown
+        await loadTeams();
+        clearTeamSearch();
+
+        if (info.userPrediction) {
+          document.getElementById("topscorer-current").style.display   = "block";
+          document.getElementById("topscorer-current-val").textContent = info.userPrediction;
+          document.getElementById("topscorer-btn").textContent         = "⚽ อัปเดตผลทาย";
+        } else {
+          document.getElementById("topscorer-current").style.display = "none";
+          document.getElementById("topscorer-btn").textContent       = "⚽ ส่งผลทาย";
+        }
       }
     }
   }
 
+  // ==========================================
+  // ===== SUBMIT SPECIAL =====
+  // ==========================================
   async function submitSpecial(type) {
     if (!currentUser) { showAlert("error", "❌ กรุณา Login ก่อน!"); return; }
 
-    const input = document.getElementById(type + "-input").value.trim();
-    if (!input) { showAlert("error", "❌ กรุณากรอกข้อมูลก่อน!"); return; }
+    let prediction = "";
+
+    if (type === "topscorer") {
+      if (!selectedPlayer) {
+        showAlert("error", "❌ กรุณาเลือกผู้เล่นก่อน!"); return;
+      }
+      prediction = selectedPlayer;
+    } else {
+      prediction = document.getElementById("champion-input").value.trim();
+      if (!prediction) { showAlert("error", "❌ กรุณากรอกชื่อทีมก่อน!"); return; }
+    }
 
     const emoji = type === "champion" ? "🏆" : "⚽";
     const btn   = document.getElementById(type + "-btn");
@@ -1291,7 +1609,7 @@
           email:      currentUser.email,
           playerName: currentUser.name,
           type,
-          prediction: input
+          prediction
         })
       });
       const result = await res.json();
@@ -1299,7 +1617,7 @@
       if (result.status === "success" || result.status === "updated") {
         showAlert("success", "✅ " + result.message);
         document.getElementById(type + "-current").style.display   = "block";
-        document.getElementById(type + "-current-val").textContent = input;
+        document.getElementById(type + "-current-val").textContent = prediction;
         btn.textContent = emoji + " อัปเดตผลทาย";
       } else if (result.status === "closed") {
         showAlert("error", "🔒 " + result.message);
@@ -1381,7 +1699,9 @@
       const predictions = predData.values  || [];
       const matches     = matchData.values || [];
 
-      const myPreds = predictions.filter(row => row[2].toLowerCase() === currentUser.email.toLowerCase());
+      const myPreds = predictions.filter(
+        row => row[2].toLowerCase() === currentUser.email.toLowerCase()
+      );
 
       if (myPreds.length === 0) {
         document.getElementById("history-summary").style.display = "none";
@@ -1505,7 +1825,9 @@
   function filterHistory(type, el) {
     document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
     el.classList.add("active");
-    const filtered = type === "all" ? historyData : historyData.filter(h => h.resultType === type);
+    const filtered = type === "all"
+      ? historyData
+      : historyData.filter(h => h.resultType === type);
     renderHistory(filtered);
   }
 
@@ -1549,7 +1871,7 @@
       const rows = data.values || [];
       matchesData = rows;
 
-      const select   = document.getElementById("admin-match-select");
+      const select = document.getElementById("admin-match-select");
       select.innerHTML = '<option value="">-- เลือกนัด --</option>';
       const upcoming = rows.filter(r => r[8] !== "Finished");
 
@@ -1587,8 +1909,8 @@
     const matchId = document.getElementById("admin-match-select").value;
     const match   = matchesData.find(r => r[0] === matchId);
     const btn     = document.getElementById("admin-submit-btn");
-    btn.disabled     = false;
-    btn.textContent  = "💾 บันทึกผลและคำนวณคะแนน";
+    btn.disabled         = false;
+    btn.textContent      = "💾 บันทึกผลและคำนวณคะแนน";
     btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
     btn.style.color      = "#000";
 
@@ -1621,8 +1943,8 @@
     if (!confirm(`ยืนยันผล?\n\n⚽ ${match[2]}  ${homeScore} - ${awayScore}  ${match[3]}`)) return;
 
     const btn = document.getElementById("admin-submit-btn");
-    btn.disabled     = true;
-    btn.textContent  = "⏳ กำลังคำนวณ...";
+    btn.disabled         = true;
+    btn.textContent      = "⏳ กำลังคำนวณ...";
     btn.style.background = "#555";
     btn.style.color      = "#fff";
 
@@ -1710,6 +2032,18 @@
     document.body.appendChild(el);
     setTimeout(() => { el.style.opacity = "0"; setTimeout(() => el.remove(), 500); }, 3000);
   }
+
+  // ==========================================
+  // ===== CLOSE DROPDOWN ON OUTSIDE CLICK =====
+  // ==========================================
+  document.addEventListener("click", function(e) {
+    const search   = document.getElementById("team-search");
+    const dropdown = document.getElementById("team-dropdown");
+    if (!search || !dropdown) return;
+    if (!search.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.style.display = "none";
+    }
+  });
 
   // ==========================================
   // ===== INIT =====
