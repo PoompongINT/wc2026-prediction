@@ -181,6 +181,21 @@
       padding: 14px 20px; text-align: center; margin-bottom: 20px;
     }
     .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+
+    /* ===== PROFILE STYLES ===== */
+    .profile-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; margin: 0 auto 15px;
+    }
+    .profile-info-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; border-bottom: 1px solid #222255; font-size: 0.9rem;
+    }
+    .profile-info-row:last-child { border-bottom: none; }
+    .profile-info-label { color: #888; }
+    .profile-info-value { color: #fff; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -259,7 +274,6 @@
   <div id="page-history" class="page">
     <h2 class="section-title">📋 ประวัติการทายของฉัน</h2>
 
-    <!-- ยังไม่ Login -->
     <div id="history-login-warning" style="display:none;">
       <div class="card" style="text-align:center; padding:40px;">
         <div style="font-size:3rem; margin-bottom:15px;">🔒</div>
@@ -271,7 +285,6 @@
       </div>
     </div>
 
-    <!-- Summary -->
     <div id="history-summary" style="display:none;">
       <div class="stat-grid">
         <div class="stat-card" style="border-color:#FFD700;">
@@ -319,18 +332,62 @@
   <!-- ===== LOGIN PAGE ===== -->
   <div id="page-login" class="page">
     <div class="login-box">
-      <h2>👤 เข้าสู่ระบบ</h2>
-      <div class="card">
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="login-email" placeholder="example@gmail.com">
+
+      <!-- ยังไม่ Login -->
+      <div id="login-form-box">
+        <h2>👤 เข้าสู่ระบบ</h2>
+        <div class="card">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="example@gmail.com">
+          </div>
+          <div class="form-group">
+            <label>ชื่อ</label>
+            <input type="text" id="login-name" placeholder="ชื่อของคุณ">
+          </div>
+          <button class="btn" onclick="login()">เข้าสู่ระบบ</button>
         </div>
-        <div class="form-group">
-          <label>ชื่อ</label>
-          <input type="text" id="login-name" placeholder="ชื่อของคุณ">
-        </div>
-        <button class="btn" onclick="login()">เข้าสู่ระบบ</button>
       </div>
+
+      <!-- Login แล้ว -->
+      <div id="logged-in-box" style="display:none;">
+        <h2>👤 บัญชีของฉัน</h2>
+        <div class="card" style="padding:30px;">
+
+          <div style="text-align:center; margin-bottom:25px;">
+            <div class="profile-avatar">👤</div>
+            <div style="font-size:1.4rem; font-weight:bold; color:#FFD700;" id="profile-name"></div>
+            <div style="color:#888; font-size:0.9rem; margin-top:5px;" id="profile-email"></div>
+          </div>
+
+          <div style="background:#0a0a2e; border-radius:12px; padding:15px; margin-bottom:20px;">
+            <div class="profile-info-row">
+              <span class="profile-info-label">สถานะ</span>
+              <span style="color:#2ecc71; font-weight:bold;">✅ เข้าสู่ระบบแล้ว</span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">ชื่อ</span>
+              <span class="profile-info-value" id="profile-name-2"></span>
+            </div>
+            <div class="profile-info-row">
+              <span class="profile-info-label">Email</span>
+              <span class="profile-info-value" id="profile-email-2"></span>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <button class="btn" style="font-size:0.9rem;"
+              onclick="showPage('history', document.querySelectorAll('nav button')[2])">
+              📋 ดูประวัติทาย
+            </button>
+            <button class="btn btn-danger" style="font-size:0.9rem;" onclick="logout()">
+              🚪 ออกจากระบบ
+            </button>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -447,16 +504,68 @@
     }
   }
 
-  // ===== UPDATE USER INFO =====
+  // ===== UPDATE USER INFO (หน้าทายผล) =====
   function updateUserInfo() {
     if (currentUser) {
       document.getElementById("current-user-info").style.display = "block";
-      document.getElementById("login-warning").style.display = "none";
-      document.getElementById("user-display").textContent = currentUser.name;
+      document.getElementById("login-warning").style.display     = "none";
+      document.getElementById("user-display").textContent        = currentUser.name;
     } else {
       document.getElementById("current-user-info").style.display = "none";
-      document.getElementById("login-warning").style.display = "block";
+      document.getElementById("login-warning").style.display     = "block";
     }
+  }
+
+  // ===== UPDATE LOGIN UI (ทุกที่) =====
+  function updateLoginUI() {
+    const loginBtn = document.getElementById("loginBtn");
+
+    if (currentUser) {
+      // ปุ่ม Nav
+      loginBtn.textContent = "👤 " + currentUser.name;
+
+      // หน้า Profile
+      document.getElementById("login-form-box").style.display = "none";
+      document.getElementById("logged-in-box").style.display  = "block";
+      document.getElementById("profile-name").textContent     = currentUser.name;
+      document.getElementById("profile-email").textContent    = currentUser.email;
+      document.getElementById("profile-name-2").textContent   = currentUser.name;
+      document.getElementById("profile-email-2").textContent  = currentUser.email;
+    } else {
+      // ปุ่ม Nav
+      loginBtn.textContent = "👤 Login";
+
+      // หน้า Login
+      document.getElementById("login-form-box").style.display = "block";
+      document.getElementById("logged-in-box").style.display  = "none";
+
+      // เคลียร์ฟอร์ม
+      document.getElementById("login-email").value = "";
+      document.getElementById("login-name").value  = "";
+    }
+  }
+
+  // ===== LOGIN =====
+  function login() {
+    const email = document.getElementById("login-email").value.trim();
+    const name  = document.getElementById("login-name").value.trim();
+    if (!email || !name) { showAlert("error", "❌ กรุณากรอกข้อมูลให้ครบ!"); return; }
+
+    currentUser = { email, name };
+    localStorage.setItem("wc2026_user", JSON.stringify(currentUser));
+    updateLoginUI();
+    showAlert("success", "✅ ยินดีต้อนรับ " + name + "!");
+    showPage("matches", document.querySelector("nav button"));
+  }
+
+  // ===== LOGOUT =====
+  function logout() {
+    if (!confirm("ต้องการออกจากระบบใช่ไหม?")) return;
+    currentUser = null;
+    localStorage.removeItem("wc2026_user");
+    updateLoginUI();
+    showAlert("success", "🚪 ออกจากระบบแล้ว");
+    showPage("matches", document.querySelector("nav button"));
   }
 
   // ===== LOAD MATCHES =====
@@ -563,20 +672,20 @@
     if (match) {
       document.getElementById("home-team-name").textContent = "🏳️ " + match[2];
       document.getElementById("away-team-name").textContent = "🏳️ " + match[3];
-      document.getElementById("home-label").textContent = match[2];
-      document.getElementById("away-label").textContent = match[3];
+      document.getElementById("home-label").textContent     = match[2];
+      document.getElementById("away-label").textContent     = match[3];
       document.getElementById("match-preview").style.display = "block";
 
       const matchTime = new Date(match[4]);
       updateDeadlineDisplay(matchTime);
       countdownTimer = setInterval(() => updateDeadlineDisplay(matchTime), 1000);
     } else {
-      document.getElementById("match-preview").style.display = "none";
-      document.getElementById("match-deadline").textContent = "";
+      document.getElementById("match-preview").style.display  = "none";
+      document.getElementById("match-deadline").textContent   = "";
     }
 
     const btn = document.getElementById("submit-btn");
-    btn.disabled = false;
+    btn.disabled   = false;
     btn.textContent = "✅ ส่งผลทาย";
     btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
     btn.style.color = "#000";
@@ -588,19 +697,19 @@
     const diff = matchTime - new Date();
 
     if (diff <= 0) {
-      deadlineEl.className = "deadline-red";
+      deadlineEl.className   = "deadline-red";
       deadlineEl.textContent = "🔒 ปิดรับทายแล้ว — แมตช์เริ่มแล้ว!";
       const btn = document.getElementById("submit-btn");
-      btn.disabled = true;
+      btn.disabled    = true;
       btn.textContent = "🔒 หมดเวลาทาย";
       btn.style.background = "#555";
       clearInterval(countdownTimer);
       countdownTimer = null;
     } else if (diff <= 3600000) {
-      deadlineEl.className = "deadline-orange";
+      deadlineEl.className   = "deadline-orange";
       deadlineEl.textContent = "⚠️ ใกล้ปิดรับ! " + formatTimeLeft(matchTime);
     } else {
-      deadlineEl.className = "deadline-green";
+      deadlineEl.className   = "deadline-green";
       deadlineEl.textContent = "⏰ " + formatTimeLeft(matchTime);
     }
   }
@@ -632,7 +741,7 @@
     };
 
     const btn = document.getElementById("submit-btn");
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = "⏳ กำลังส่ง...";
 
     try {
@@ -644,23 +753,34 @@
         markMatchAsPredicted();
       } else if (result.status === "duplicate") {
         showAlert("warning", "⚠️ คุณเคยทายแมตช์นี้แล้ว!");
-        btn.disabled = false;
+        btn.disabled    = false;
         btn.textContent = "✅ ส่งผลทาย";
         btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
         btn.style.color = "#000";
       } else {
         showAlert("error", "❌ เกิดข้อผิดพลาด กรุณาลองใหม่");
-        btn.disabled = false;
+        btn.disabled    = false;
         btn.textContent = "✅ ส่งผลทาย";
         btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
         btn.style.color = "#000";
       }
     } catch (err) {
       showAlert("error", "❌ ไม่สามารถเชื่อมต่อได้: " + err.message);
-      btn.disabled = false;
+      btn.disabled    = false;
       btn.textContent = "✅ ส่งผลทาย";
       btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
       btn.style.color = "#000";
+    }
+  }
+
+  // ===== MARK AS PREDICTED =====
+  function markMatchAsPredicted() {
+    const btn = document.getElementById("submit-btn");
+    if (btn) {
+      btn.disabled    = true;
+      btn.textContent = "✅ ส่งผลทายแล้ว!";
+      btn.style.background = "#2ecc71";
+      btn.style.color = "#fff";
     }
   }
 
@@ -699,19 +819,6 @@
     }
   }
 
-  // ===== LOGIN =====
-  function login() {
-    const email = document.getElementById("login-email").value.trim();
-    const name  = document.getElementById("login-name").value.trim();
-    if (!email || !name) { showAlert("error", "❌ กรุณากรอกข้อมูลให้ครบ!"); return; }
-
-    currentUser = { email, name };
-    localStorage.setItem("wc2026_user", JSON.stringify(currentUser));
-    document.getElementById("loginBtn").textContent = "👤 " + name;
-    showAlert("success", "✅ ยินดีต้อนรับ " + name + "!");
-    showPage("matches", document.querySelector("nav button"));
-  }
-
   // ===== SHOW ALERT =====
   function showAlert(type, message) {
     const colors = { success: "#2ecc71", warning: "#f39c12", error: "#e74c3c" };
@@ -728,27 +835,15 @@
     setTimeout(() => { alertEl.style.opacity = "0"; setTimeout(() => alertEl.remove(), 500); }, 3000);
   }
 
-  // ===== MARK AS PREDICTED =====
-  function markMatchAsPredicted() {
-    const btn = document.getElementById("submit-btn");
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = "✅ ส่งผลทายแล้ว!";
-      btn.style.background = "#2ecc71";
-      btn.style.color = "#fff";
-    }
-  }
-
   // ==========================================
   // ===== HISTORY FUNCTIONS =====
   // ==========================================
 
   async function loadHistory() {
-    // ยังไม่ Login
     if (!currentUser) {
       document.getElementById("history-login-warning").style.display = "block";
-      document.getElementById("history-summary").style.display = "none";
-      document.getElementById("history-list").innerHTML = "";
+      document.getElementById("history-summary").style.display       = "none";
+      document.getElementById("history-list").innerHTML               = "";
       return;
     }
 
@@ -757,7 +852,6 @@
       `<div class="loading"><div class="spinner"></div><p>กำลังโหลด...</p></div>`;
 
     try {
-      // ดึงข้อมูลพร้อมกัน
       const [predRes, matchRes] = await Promise.all([
         fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Predictions!A2:F500?key=${API_KEY}`),
         fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Matches!A2:I100?key=${API_KEY}`)
@@ -783,7 +877,6 @@
         return;
       }
 
-      // Map MatchID → Match Row
       // Matches: A=MatchID, B=Round, C=Home, D=Away, E=Date, F=HomeScore, G=AwayScore, H=DP, I=Status
       const matchMap = {};
       matches.forEach(row => { matchMap[row[0]] = row; });
@@ -823,10 +916,8 @@
                  matchDate, homeReal, awayReal, isDouble, status, resultType, points };
       });
 
-      // เรียงจากใหม่ → เก่า
       historyData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-      // Summary
       const total    = historyData.length;
       const exact    = historyData.filter(h => h.resultType === "exact").length;
       const result   = historyData.filter(h => h.resultType === "result").length;
@@ -838,7 +929,6 @@
       document.getElementById("stat-points").textContent = totalPts;
       document.getElementById("history-summary").style.display = "block";
 
-      // Reset filter
       document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
       document.querySelector(".filter-btn").classList.add("active");
 
@@ -850,14 +940,12 @@
     }
   }
 
-  // ===== GET RESULT TYPE =====
   function getResultType(home, away) {
     if (home > away) return "H";
     if (home < away) return "A";
     return "D";
   }
 
-  // ===== RENDER HISTORY =====
   function renderHistory(data) {
     if (data.length === 0) {
       document.getElementById("history-list").innerHTML = `
@@ -913,7 +1001,6 @@
     document.getElementById("history-list").innerHTML = html;
   }
 
-  // ===== FILTER HISTORY =====
   function filterHistory(type, el) {
     document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
     el.classList.add("active");
@@ -928,11 +1015,11 @@
   function initAdminPage() {
     if (adminLoggedIn) {
       document.getElementById("admin-login-box").style.display = "none";
-      document.getElementById("admin-panel").style.display = "block";
+      document.getElementById("admin-panel").style.display     = "block";
       loadAdminMatches();
     } else {
       document.getElementById("admin-login-box").style.display = "block";
-      document.getElementById("admin-panel").style.display = "none";
+      document.getElementById("admin-panel").style.display     = "none";
     }
   }
 
@@ -944,7 +1031,7 @@
     adminLoggedIn = true;
 
     document.getElementById("admin-login-box").style.display = "none";
-    document.getElementById("admin-panel").style.display = "block";
+    document.getElementById("admin-panel").style.display     = "block";
 
     loadAdminMatches();
     showAlert("success", "✅ เข้าสู่ระบบ Admin สำเร็จ!");
@@ -953,9 +1040,9 @@
   function adminLogout() {
     adminLoggedIn = false;
     adminPassword = "";
-    document.getElementById("admin-password").value = "";
+    document.getElementById("admin-password").value          = "";
     document.getElementById("admin-login-box").style.display = "block";
-    document.getElementById("admin-panel").style.display = "none";
+    document.getElementById("admin-panel").style.display     = "none";
     showAlert("success", "🚪 ออกจากระบบ Admin แล้ว");
   }
 
@@ -1012,7 +1099,7 @@
     const match   = matchesData.find(r => r[0] === matchId);
 
     const btn = document.getElementById("admin-submit-btn");
-    btn.disabled = false;
+    btn.disabled    = false;
     btn.textContent = "💾 บันทึกผลและคำนวณคะแนน";
     btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
     btn.style.color = "#000";
@@ -1034,7 +1121,7 @@
         : `🎯 ทายแม่น = <strong>3 pts</strong> &nbsp;|&nbsp; ✅ ทายผลถูก = <strong>1 pt</strong>`;
     } else {
       document.getElementById("admin-match-preview").style.display = "none";
-      document.getElementById("score-preview").style.display = "none";
+      document.getElementById("score-preview").style.display       = "none";
     }
   }
 
@@ -1050,7 +1137,7 @@
     if (!confirm(confirmMsg)) return;
 
     const btn = document.getElementById("admin-submit-btn");
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = "⏳ กำลังคำนวณคะแนน...";
     btn.style.background = "#555";
     btn.style.color = "#fff";
@@ -1069,9 +1156,9 @@
 
       if (result.status === "success") {
         showAlert("success", "✅ " + result.message);
-        btn.textContent = "✅ อัปเดตสำเร็จ!";
+        btn.textContent  = "✅ อัปเดตสำเร็จ!";
         btn.style.background = "#2ecc71";
-        btn.style.color = "#fff";
+        btn.style.color  = "#fff";
         setTimeout(() => loadAdminMatches(), 1500);
 
       } else if (result.status === "unauthorized") {
@@ -1080,7 +1167,7 @@
 
       } else {
         showAlert("error", "❌ " + result.message);
-        btn.disabled = false;
+        btn.disabled    = false;
         btn.textContent = "💾 บันทึกผลและคำนวณคะแนน";
         btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
         btn.style.color = "#000";
@@ -1088,7 +1175,7 @@
 
     } catch (err) {
       showAlert("error", "❌ เชื่อมต่อไม่ได้: " + err.message);
-      btn.disabled = false;
+      btn.disabled    = false;
       btn.textContent = "💾 บันทึกผลและคำนวณคะแนน";
       btn.style.background = "linear-gradient(135deg, #FFD700, #FFA500)";
       btn.style.color = "#000";
@@ -1096,9 +1183,7 @@
   }
 
   // ===== INIT =====
-  if (currentUser) {
-    document.getElementById("loginBtn").textContent = "👤 " + currentUser.name;
-  }
+  updateLoginUI();
   loadMatches();
 </script>
 </body>
