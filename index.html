@@ -1346,25 +1346,35 @@
   // ==========================================
   // FETCH SHEET HELPER (ไม่ต้องใช้ API Key)
   // ==========================================
-  async function fetchSheet(sheetName) {
-    const encodedSheet = encodeURIComponent(sheetName);
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodedSheet}`;
-    const res  = await fetch(url);
-    const text = await res.text();
+async function fetchSheet(sheetName) {
+  const encodedSheet = encodeURIComponent(sheetName);
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodedSheet}`;
+  const res  = await fetch(url);
+  const text = await res.text();
 
-    // gviz ส่งกลับมาเป็น "google.visualization.Query.setResponse({...})"
-    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
-    if (!match) throw new Error("ไม่สามารถ parse ข้อมูลจาก Google Sheet ได้");
+  const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+  if (!match) throw new Error("ไม่สามารถ parse ข้อมูลจาก Google Sheet ได้");
 
-    const json = JSON.parse(match[1]);
-    if (!json.table || !json.table.rows) return [];
+  const json = JSON.parse(match[1]);
+  if (!json.table || !json.table.rows) return [];
 
-    return json.table.rows.map(row =>
-      (row.c || []).map(cell =>
-        (cell && cell.v !== null && cell.v !== undefined) ? String(cell.v).trim() : ""
-      )
-    );
-  }
+  return json.table.rows.map(row =>
+    (row.c || []).map(cell => {
+      if (!cell || cell.v === null || cell.v === undefined) return "";
+
+      // ✅ แปลง gviz Date format → ISO String
+      if (typeof cell.v === "string" && cell.v.startsWith("Date(")) {
+        const parts = cell.v.replace("Date(", "").replace(")", "").split(",").map(Number);
+        // parts = [year, month(0-based), day, hour, min, sec]
+        const d = new Date(Date.UTC(parts[0], parts[1], parts[2], parts[3] || 0, parts[4] || 0, parts[5] || 0));
+        // แปลงเป็น format ที่อ่านง่าย เช่น "2026-06-12 02:00"
+        return d.toISOString().replace("T", " ").substring(0, 16);
+      }
+
+      return String(cell.v).trim();
+    })
+  );
+}
 
   // ==========================================
   // NAVIGATION
