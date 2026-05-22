@@ -2591,15 +2591,52 @@ async function fetchSheet(sheetName) {
     }
   }
 
-  function adminLogin() {
-    const pw = document.getElementById("admin-password").value;
-    if (!pw) { showAlert("error", "❌ กรุณากรอกรหัสผ่าน"); return; }
-    adminPassword = pw; adminLoggedIn = true;
-    document.getElementById("admin-login-box").style.display = "none";
-    document.getElementById("admin-panel").style.display     = "block";
-    loadAdminMatches();
-    showAlert("success", "✅ เข้าสู่ระบบ Admin สำเร็จ!");
+async function adminLogin() {
+  const pw = document.getElementById("admin-password").value;
+  if (!pw) { showAlert("error", "❌ กรุณากรอกรหัสผ่าน"); return; }
+
+  const btn = document.querySelector("#admin-login-box .btn");
+  btn.disabled    = true;
+  btn.textContent = "⏳ กำลังตรวจสอบ...";
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action:   "verifyAdmin",
+        password: pw
+      })
+    });
+    const result = await res.json();
+
+    if (result.status === "success") {
+      // ✅ verify ผ่านแล้วค่อย set state
+      adminPassword = pw;
+      adminLoggedIn = true;
+      document.getElementById("admin-login-box").style.display = "none";
+      document.getElementById("admin-panel").style.display     = "block";
+      document.getElementById("admin-password").value          = "";
+      loadAdminMatches();
+      showAlert("success", "✅ เข้าสู่ระบบ Admin สำเร็จ!");
+
+    } else if (result.status === "unauthorized") {
+      // ❌ รหัสผ่านผิด
+      showAlert("error", "❌ รหัสผ่านไม่ถูกต้อง!");
+      document.getElementById("admin-password").value = "";
+      document.getElementById("admin-password").focus();
+
+    } else {
+      showAlert("error", "❌ เกิดข้อผิดพลาด: " + result.message);
+    }
+
+  } catch (err) {
+    showAlert("error", "❌ เชื่อมต่อไม่ได้: " + err.message);
+
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = "🔓 เข้าสู่ระบบ Admin";
   }
+}
 
   function adminLogout() {
     adminLoggedIn = false; adminPassword = "";
